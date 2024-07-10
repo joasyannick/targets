@@ -14,11 +14,29 @@
 </script>
 
 <template>
-  <header><NightIcon /></header>
-  <DialogBox />
+  <header class="trgt-header">
+    <NightIcon />
+  </header>    
   <RouterView />
+  <footer class="trgt-footer">
+    <DialogBox />
+  </footer>
 </template>
 
 <style scoped>
+  header.trgt-header, footer.trgt-footer {
+    position: absolute;
+    z-index: 1;
+  }
 
+  header.trgt-header {
+    display: inline-flex;
+    left: 0;
+    top: 0;
+  }
+
+  footer.trgt-footer {
+    left: 0;
+    bottom: 0;
+  }
 </style>

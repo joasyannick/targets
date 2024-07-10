@@ -1,0 +1,26 @@
+html {
+  font-family: sans-serif;
+  line-height: 1.6;
+}
+
+body {
+  margin: 0;
+}
+
+div#trgt-app {
+  --TRGT-BACKGROUND-HUE: 194;
+  --TRGT-BACKGROUND-SATURATION: 100%;
+  --TRGT-TEXT-HUE: var(--TRGT-BACKGROUND-HUE);
+  --TRGT-TEXT-SATURATION: var(--TRGT-BACKGROUND-SATURATION);
+  --TRGT-BUTTON-HUE: (var(--TRGT-BACKGROUND-HUE) + 180);
+  --TRGT-NIGHT-TRANSITION-DURATION: 1s;
+  --trgt-night-sign: 1;
+  --trgt-background-lightness: 87%;
+  --trgt-text-lightness: (100% - var(--trgt-background-lightness));
+  color: hsl(var(--TRGT-TEXT-HUE), var(--TRGT-TEXT-SATURATION), calc(var(--trgt-text-lightness)));
+}
+
+div#trgt-app[data-trgt-night] {
+  --trgt-night-sign: -1;
+  --trgt-background-lightness: 7%;
+}
