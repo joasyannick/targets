@@ -18,6 +18,7 @@ div#trgt-app {
   --trgt-background-lightness: 87%;
   --trgt-text-lightness: (100% - var(--trgt-background-lightness));
   color: hsl(var(--TRGT-TEXT-HUE), var(--TRGT-TEXT-SATURATION), calc(var(--trgt-text-lightness)));
+  transition: color var(--TRGT-NIGHT-TRANSITION-DURATION);
 }
 
 div#trgt-app[data-trgt-night] {

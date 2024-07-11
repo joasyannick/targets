@@ -10,14 +10,16 @@
 
   enum Type { BOMB, NORMAL, BRONZE, SILVER, GOLD }
   enum Direction { LEFT, RIGHT, UP, DOWN }
-  type Target = { id: number, x: number, y: number, enter: Direction, leave: Direction, type: Type }
+  type Target = { x: number, y: number, arrival: Direction, departure: Direction, type: Type, clicked: boolean }
+
+  let lastTargetId = 0
 
   const countdown = ref( constants.gameDuration )
   const score = ref ( 0 )
-  const targets = ref ( [] as Target[] )
+  const targets = ref ( new Map() as Map< number, Target > )
 
   const onGameOver = () => {
-      dialogBox.say( `You scored ${ score } points` )
+      dialogBox.say( `You scored ${ score.value } points` )
       router.push( '/' )
     }
 
@@ -30,20 +32,79 @@
         }
     } )
   
-  const classes = computed( () => targets.value.map( ( target ) => {
+  const value = ( target: Target ) => {
       switch ( target.type ) {
         case Type.BOMB:
-          return 'trgt-bomb'
+          return -50
         case Type.NORMAL:
-          return 'trgt-normal'
+          return 50
         case Type.BRONZE:
-          return 'trgt-bronze'
+          return 100
         case Type.SILVER:
-          return 'trgt-silver'
+          return 150
         case Type.GOLD:
-          return 'trgt-gold'
+          return 200
       }
-    } ) )
+    }
+  
+  const classes = ( target: Target ) => {
+      const results = []
+      switch ( target.type ) {
+        case Type.BOMB:
+          results.push( 'trgt-bomb' )
+          break
+        case Type.NORMAL:
+          results.push( 'trgt-normal' )
+          break
+        case Type.BRONZE:
+          results.push( 'trgt-bronze' )
+          break
+        case Type.SILVER:
+          results.push( 'trgt-silver' )
+          break
+        case Type.GOLD:
+          results.push( 'trgt-gold' )
+          break
+      }
+      switch ( target.arrival ) {
+        case Direction.LEFT:
+          results.push( 'trgt-arrival-left' )
+          break
+        case Direction.RIGHT:
+          results.push( 'trgt-arrival-right' )
+          break
+        case Direction.UP:
+          results.push( 'trgt-arrival-up' )
+          break
+        case Direction.DOWN:
+          results.push( 'trgt-arrival-down' )
+          break
+      }
+      switch ( target.departure ) {
+        case Direction.LEFT:
+          results.push( 'trgt-departure-left' )
+          break
+        case Direction.RIGHT:
+          results.push( 'trgt-departure-right' )
+          break
+        case Direction.UP:
+          results.push( 'trgt-departure-up' )
+          break
+        case Direction.DOWN:
+          results.push( 'trgt-departure-down' )
+          break
+      }
+      if ( target.clicked ) {
+        results.push( 'trgt-clicked' )
+      }
+    }
+
+  const style = ( target: Target ) => {
+      return {
+          left: `${ target.x }%`,
+          top: `${ target.y }%`
+        }
+    }
 
   onMounted( () => {
       const interval = setInterval( () => {
@@ -55,14 +116,22 @@
           }
         }, 1000 )
     } )
+  
+  const onTargetClick = ( id: number ) => {
+      if ( targets.value.get( id ) ) {
+        targets.value.get( id )!.clicked = true
+        targets.value.delete( id )
+        score.value += value( targets.value.get( id )! )
+      }
+    }
 </script>
 
 <template>
   <div class="trgt-playground">
     <time :datetime="time.datetime">{{ time.countdown }}</time>
     <TransitionGroup name="trgt">
-      <template v-for="( target, index ) in targets" :key="target.id">
-        <svg :class="classes[ index ]" viewbox="0 0 100 100">
+      <template v-for="[ id, target ] in targets" :key="id">
+        <svg :class="classes( target )" :style="style( target )" viewbox="0 0 100 100" @click="onTargetClick( id )">
           <circle cx="50" cy="50" r="50" />
         </svg>
       </template>
