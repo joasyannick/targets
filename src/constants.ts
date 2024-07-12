@@ -1,5 +1,5 @@
 const constants = Object.freeze( {
-    gameDuration: 180 // seconds
+    gameDuration: 20 // seconds
   } )
 
 export default constants

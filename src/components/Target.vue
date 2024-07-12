@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import { ref, computed } from 'vue'
+  import { ref, computed, onMounted, onUnmounted } from 'vue'
 
-  const props = defineProps< { id: number } >()
-  const emit = defineEmits< { hit: [ id: number ] } >()
+  const props = defineProps< { targetId: number } >()
+  const emit = defineEmits< { hit: [ targetId: number, value: number ], timeout: [ targetId: number ] } >()
 
   enum TargetType { BOMB, NORMAL, BRONZE, SILVER, GOLD }
   enum Direction { LEFT, RIGHT, UP, DOWN }
@@ -18,8 +18,10 @@
   const y = Math.random() * 100
   const enter = randomEnum( Direction )
   const leave = randomEnum( Direction )
-  const style = { left: `${ x }%`, top: `${ y }%` }
   const type = ref( randomEnum( TargetType ) )
+  let timeout = 0
+
+  const style = { left: `${ x }%`, top: `${ y }%` }
 
   const value = computed( () => {
       switch ( type.value ) {
@@ -35,6 +37,44 @@
           return 200
       }
     } )
+  
+    const color = computed( () => {
+      let hue = 210
+      let saturation = 100
+      let lightness = 50
+      switch ( type.value ) {
+        case TargetType.BOMB:
+          hue = 0
+          break
+        case TargetType.BRONZE:
+          hue = 30
+          saturation = 60
+          break
+        case TargetType.SILVER:
+          saturation = 0
+          lightness = 75
+          break
+        case TargetType.GOLD:
+          hue = 50
+          break
+      }
+      return `hsl( ${ hue }, ${ saturation }%, ${ lightness }% )`
+    } )
+
+    const duration = computed( () => {
+        switch ( type.value ) {
+          case TargetType.BOMB:
+            return 4
+          case TargetType.NORMAL:
+            return 4
+          case TargetType.BRONZE:
+            return 3
+          case TargetType.SILVER:
+            return 2
+          case TargetType.GOLD:
+            return 1
+        } 
+      } )
 
   const classes = computed( () => {
       const results = []
@@ -63,10 +103,10 @@
           results.push( 'trgt-enter-right' )
           break
         case Direction.UP:
-          results.push( 'trgt-enter-top' )
+          results.push( 'trgt-enter-up' )
           break
         case Direction.DOWN:
-          results.push( 'trgt-enter-bottom' )
+          results.push( 'trgt-enter-down' )
           break
       }
       switch ( leave ) {
@@ -86,16 +126,29 @@
       return results
     } )
   
-    const onHit = () => {
-      emit( 'hit', props.id )
+  const onHit = () => {
+      emit( 'hit', props.targetId, value.value )
     }
+
+  onMounted( () => timeout = setTimeout( () => emit( 'timeout', props.targetId ), duration.value * 1000 ) )
+  
+  onUnmounted( () => clearTimeout( timeout ) )
 </script>
 
 <template>
-  <svg :class="classes" :style="style" viewbox="0 0 100 100" @click="onHit">
-    <circle cx="50" cy="50" r="50" />
+  <div>
+  <svg class="trgt-target" :class="classes" :style="style" viewbox="0 0 100 100" @click="onHit">
+    <circle :fill="color" cx="50" cy="50" r="50" />
   </svg>
+  </div>
+
 </template>
 
 <style>
+  svg.trgt-target {
+    display: flex;
+    position: absolute;
+    width: 100px;
+    height: 100px;
+  }
 </style>
